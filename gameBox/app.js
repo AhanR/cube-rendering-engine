@@ -2,7 +2,7 @@
 //try using p5
 //write length formula
 var canvas, ctx ;
-const fps = 0.5;
+const fps = 24;
 const speed = (fps/24)*0.005; //sets the speed of the object
 var cntrX , cntrY ;
 var cube1;
@@ -74,7 +74,7 @@ function frame()
 function initialize()
 {
     //these values are set as of now to be at 50,50 w.r.t the center
-    V1 = new vtx(cntrX - 50, cntrY + 50, 0);
+    V1 = new vtx(cntrX, cntrY, -1);
     cube1 = new cube(10, V1);
 }
 
@@ -102,7 +102,6 @@ function stateModify(obj)
     }
 
     //assigning the projected 2D co ordinates using the 3D values
-    //the function flat seems to not be working for some reason which I cannot understand
     obj.printV1 = flat(obj.vtx1.x, obj.vtx1.y, obj.vtx1.z);
     obj.printV2 = flat(obj.vtx1.x, obj.vtx1.y, obj.vtx1.z - obj.L/300);
     obj.printV3 = flat(obj.vtx1.x + obj.L, obj.vtx1.y, obj.vtx1.z - obj.L/300);
@@ -153,13 +152,12 @@ function drawRect(obj)
 }
 
 //used to convert 3D points to 2D 
-// I don't understand why this function does not work?
 function flat(x,y,z)
 {
     obj = new vtx(0,0,0);
-    obj.x = this.x;
-    obj.y = this.y;
-    obj.z = this.z;
+    obj.x = x;
+    obj.y = y;
+    obj.z = z;
     obj.x = cntrX + ((obj.z + 1)*(obj.x - cntrX));
     obj.y = cntrY + ((obj.z + 1)*(obj.y - cntrX));
     return obj;
