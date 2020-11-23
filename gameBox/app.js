@@ -1,6 +1,3 @@
-// file:///D:/webdev/css-html-js/gameBox/index.html
-//try using p5
-//write length formula
 var canvas, ctx ;
 const fps = 24;
 const speed = (fps/24)*0.005; //sets the speed of the object
