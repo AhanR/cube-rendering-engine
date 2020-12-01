@@ -1,11 +1,12 @@
 var canvas, ctx ;
 const fps = 30;
-const speed = (fps/24)*(window.innerHeight/300)*0.005; //sets the speed of the object
+const speed = (fps/24)*(window.innerHeight/300)*0.01; //sets the speed of the object
 var cntrX , cntrY ;
-var cube1;
-var V1, V2;
+var cube1 , planeCube;
+var V1, V2, plane;
 var gameOn = true;
 var keyPressed;
+var factor = 4.5 * (1920 / window.innerWidth);
 
 //vtx class to store x,y,z co ordinates of a point 
 class vtx{
@@ -52,7 +53,9 @@ window.onload = function()
     //rendering one frame before starting the evaluation of the rest of the program.
     frame();
     //this part is used to check for input and used to control the cube co ordinates of the cube
-    document.addEventListener('keydown',keyCheck);
+    document.addEventListener('keydown',(e)=>{
+        keyPressed = e.keyCode;
+    });
     console.log(gameOn);
     //the game is put on loop
     setInterval(function(){
@@ -69,47 +72,51 @@ window.onload = function()
 function frame()
 {
     stateModify(cube1);
-    drawR(cube1);
+    drawStatics(planeCube);
+    drawRect(cube1);
 }
 
 function initialize()
 {
     //these values are set as of now to be at 50,50 w.r.t the center
-    V1 = new vtx(cntrY, cntrY, 0);
+    V1 = new vtx(500,500, 0);
     cube1 = new cube(100, V1);
+    plane = new vtx(window.innerWidth/2, window.height, 0);
+    planeCube = new cube(window.innerWidth/2, plane);
 }
 
 function stateModify(obj)
 {
-    // -1 makes the cube go left
-    // 0 makes the cube go away from camera
-    // 1 makes the cube go right
-    // 2 makes the cube go towards camera 
-    if(keyPressed == -1)
+    // <= makes the cube go left
+    // ^ makes the cube go away from camera
+    // => makes the cube go right
+    // v makes the cube go towards camera 
+    if(keyPressed == 37)
     {
         obj.vtx1.x -= 80*speed;
     }
-    else if(keyPressed == 0)
+    else if(keyPressed == 38)
     {
         obj.vtx1.z += speed;
     }
-    else if(keyPressed == 1)
+    else if(keyPressed == 39)
     {
         obj.vtx1.x += 80*speed;
     }
-    else if(keyPressed == 2)
+    else if(keyPressed == 40)
     {
         obj.vtx1.z -= speed;
     }
 
+    var scale = window.innerWidth/factor;
     //assigning the projected 2D co ordinates using the 3D values
     obj.printV1 = flat(obj.vtx1.x, obj.vtx1.y, obj.vtx1.z);
-    obj.printV2 = flat(obj.vtx1.x, obj.vtx1.y, obj.vtx1.z - obj.L/300);
-    obj.printV3 = flat(obj.vtx1.x + obj.L, obj.vtx1.y, obj.vtx1.z - obj.L/300);
+    obj.printV2 = flat(obj.vtx1.x, obj.vtx1.y, obj.vtx1.z - obj.L/scale);
+    obj.printV3 = flat(obj.vtx1.x + obj.L, obj.vtx1.y, obj.vtx1.z - obj.L/scale);
     obj.printV4 = flat(obj.vtx1.x + obj.L, obj.vtx1.y, obj.vtx1.z);
     obj.printV5 = flat(obj.vtx1.x, obj.vtx1.y + obj.L, obj.vtx1.z);
-    obj.printV6 = flat(obj.vtx1.x, obj.vtx1.y + obj.L, obj.vtx1.z - obj.L/300);
-    obj.printV7 = flat(obj.vtx1.x + obj.L, obj.vtx1.y + obj.L, obj.vtx1.z - obj.L/300);
+    obj.printV6 = flat(obj.vtx1.x, obj.vtx1.y + obj.L, obj.vtx1.z - obj.L/scale);
+    obj.printV7 = flat(obj.vtx1.x + obj.L, obj.vtx1.y + obj.L, obj.vtx1.z - obj.L/scale);
     obj.printV8 = flat(obj.vtx1.x + obj.L, obj.vtx1.y + obj.L, obj.vtx1.z);
 
     /*obj.printV1.x = cntrX + ((obj.vtx1.z + 1)*(obj.vtx1.x - cntrX));
@@ -118,57 +125,14 @@ function stateModify(obj)
     obj.printV2.y = cntrY + ((obj.vtx1.z - obj.L/300 + 1)*(obj.vtx1.y - cntrX));*/
 }
 
-//this is used to log the key entered 
-function keyCheck(e)
-{
-    if(e.keyCode==38)
-    { 
-        keyPressed = 0;
-    }
-    else if(e.keyCode==37)
-    { 
-        keyPressed = -1;
-    }
-    else if(e.keyCode==39)
-    { 
-        keyPressed = 1;
-    }
-    else if(e.keyCode==40)
-    { 
-        keyPressed = 2;
-    }
-    else if(e.keyCode==32)
-    { 
-        gameOn = !gameOn;
-    }
-    else
-    { 
-        //do quirky
-    }
-}
-
-//drawing rectangles
-
-/*function drawRect(obj)
-{
-    ctx.fillStyle = 'turquoise';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "black"
-    ctx.fillRect(cntrX-1,cntrY-1,2,2);
-    ctx.fillStyle = 'red' ;
-    ctx.fillRect(obj.printV1.x, obj.printV1.y, obj.L ,obj.L);
-    ctx.fillStyle = 'blue' ;
-    ctx.fillRect( obj.printV2.x, obj.printV2.y ,obj.L , obj.L);
-}*/
-
 //used to convert 3D points to 2D 
 function flat(x,y,z)
 {
     obj = new vtx(0,0,0);
     obj.x = x;
     obj.y = y;
-    obj.z = z;
-    obj.x = cntrX + ((obj.z + 1)*(obj.x - cntrX));
-    obj.y = cntrY + ((obj.z + 1)*(obj.y - cntrX));
+    obj.z = Math.pow((z/factor),1); //factor is screen factor
+    obj.x = cntrX + ((obj.x - cntrX)/(obj.z + 1));
+    obj.y = cntrY + ((obj.y - cntrX)/(obj.z + 1));
     return obj;
 }
