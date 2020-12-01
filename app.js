@@ -1,4 +1,3 @@
-// file:///D:/webdev/css-html-js/gameBox/index.html
 var canvas, ctx ;
 const fps = 30;
 const speed = (fps/24)*(window.innerHeight/300)*0.005; //sets the speed of the object
